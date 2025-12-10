@@ -2,7 +2,7 @@ import express from 'express'
 import mongoose from 'mongoose'
 import cors from 'cors'
 import dotenv from 'dotenv'
-import todoRouter from './routes/todoRoutes.js'
+import {todoRouter} from './routes/todoRoutes.js'
 // import Todo from './models/todoModel.js'
 
 dotenv.config()
