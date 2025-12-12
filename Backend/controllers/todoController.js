@@ -42,7 +42,6 @@ todoControllers.getTodoById = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // Validate MongoDB ObjectId format
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(404).json({ 
             success: false,
@@ -75,14 +74,74 @@ todoControllers.getTodoById = async (req, res) => {
   }
 }
 
-todoControllers.updateTodo = (req, res) => {
-  res.send("Update Todo")
+todoControllers.updateTodo = async (req, res) => {
+  try {
+      const { id } = req.params;     
+      if (!mongoose.Types.ObjectId.isValid(id)) {
+          return res.status(404).json({ 
+              success: false,
+              message: "Task not found" 
+          });
+      }
+
+      const { title, description, isCompleted } = req.body;
+      const updatedTodo = await Todo.findByIdAndUpdate(
+          id,
+          { title, description, isCompleted },
+          { new: true }
+      );
+
+      if (!updatedTodo) {
+          return res.status(404).json({ 
+              success: false,
+              message: "Task not found" 
+          });
+      }
+
+      res.status(200).json({
+          success: true,
+          message : "Task updated successfully",
+          data : {
+              id : updatedTodo._id,
+              title : updatedTodo.title,
+              description : updatedTodo.description,
+              isCompleted : updatedTodo.isCompleted
+          }
+      });
+    
+  } catch (error) {
+      res.status(500).json({ message: "There is a server side error while updating todo" });    
+  }
 }
 
 todoControllers.deleteTodo = (req, res) => {
-  res.send("Delete Todo")
-}
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(404).json({ 
+            success: false,
+            message: "Task not found" 
+        });
+    }
 
+    const deletedTodo = Todo.findByIdAndDelete(id);
+    if(!deletedTodo){
+      return res.status(404).json({ 
+            success: false,
+            message: "Task not found" 
+        });
+    }
+
+    res.status(200).json(
+      {
+        success: true,
+        message: "Task deleted successfully"
+      }
+    )
+  } catch (error) {
+    res.status(500).json({ message: "There is a server side error while deleting todo" });
+  }
+}
 
 
 
