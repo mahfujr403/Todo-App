@@ -3,6 +3,22 @@ import mongoose from "mongoose";
 
 const todoControllers = {}
 
+
+const inputValidator = (data) =>{
+    const { title, description, isCompleted } = data;
+
+    if (typeof title !== 'string'  || title.trim().length < 3) {
+        return { valid: false, message: 'Title is required and must be a non-empty string with at least 3 characters.' };
+    }
+    if (typeof description !== 'string'  || description.trim().length < 5) {
+        return { valid: false, message: 'Description is required and must be a non-empty string with at least 5 characters.' };
+    }
+    if (typeof isCompleted !== 'boolean') {
+        return { valid: false, message: 'isCompleted is required and must be a boolean.' };
+    }
+    return { valid: true };
+}
+
 todoControllers.getAllTodos = async (req, res) => {
   try {
         const todos = await Todo.find();
@@ -19,6 +35,15 @@ todoControllers.getAllTodos = async (req, res) => {
 todoControllers.createTodo = async (req, res) => {
     try {
         const { title, description, isCompleted } = req.body;
+
+        const validationResult = inputValidator({ title, description, isCompleted });
+        if (!validationResult.valid) {
+            return res.status(400).json({ 
+                success: false,
+                message: validationResult.message
+            });
+        }
+
         const newTodo = new Todo({ title, description, isCompleted });
         const savedTodo = await newTodo.save();
         res.status(201).json({
@@ -85,6 +110,14 @@ todoControllers.updateTodo = async (req, res) => {
       }
 
       const { title, description, isCompleted } = req.body;
+      const validationResult = inputValidator({ title, description, isCompleted });
+      if (!validationResult.valid) {
+          return res.status(400).json({
+              success: false,
+              message: validationResult.message
+          });
+      }
+
       const updatedTodo = await Todo.findByIdAndUpdate(
           id,
           { title, description, isCompleted },
@@ -114,7 +147,7 @@ todoControllers.updateTodo = async (req, res) => {
   }
 }
 
-todoControllers.deleteTodo = (req, res) => {
+todoControllers.deleteTodo = async (req, res) => {
   try {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
