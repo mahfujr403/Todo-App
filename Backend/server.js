@@ -3,7 +3,7 @@ import mongoose from 'mongoose'
 import cors from 'cors'
 import dotenv from 'dotenv'
 import {todoRouter} from './routes/todoRoutes.js'
-// import Todo from './models/todoModel.js'
+import { handler } from './middlewares/errorHandler.js'
 
 dotenv.config()
 
@@ -11,6 +11,9 @@ const app = express()
 app.use(express.json())
 app.use(cors())
 app.use('/api/todo', todoRouter)
+
+app.use(handler.notFound)
+app.use(handler.errorHandler)
 
 const PORT = process.env.PORT || 5000
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/todoapp'
